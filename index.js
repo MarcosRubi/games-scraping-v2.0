@@ -4,31 +4,32 @@ const { chromium } = require('playwright');
   const browser = await chromium.launch({ headless: false })
 
   const context = await browser.newContext({
-    locale: 'en-US'
-  }
-  )
+    locale: 'es'
+  })
 
   const page = await context.newPage()
 
-  await page.goto('https://www.gog.com/')
+  await page.goto('https://www.gog.com/', { waitUntil: 'domcontentloaded' })
 
   await page.waitForSelector('.discover-games__products')
 
   const results = await page.evaluate(() => {
     const games = document.querySelectorAll('.discover-games__products .product-tile')
-
     const results = []
 
     for (const game of games) {
       const name = game.querySelector('.product-tile__title').textContent
-      const imgUrl = game.querySelector('picture source').getAttribute('lazy-srcset').trim().split('\n')[0]
+      const imgUrl = `${game.querySelector('picture source').getAttribute('lazy-srcset').trim().split('\n')[0]}`
 
-      const price = game.querySelectorAll('.product-tile__prices-inner span').length > 2
-        ? [{ now: `$${game.querySelector('.product-tile__price-discounted').textContent.trim()}` }, { old: `$${game.querySelector('.product-tile__price').textContent}` }]
-        : [{ now: `$${game.querySelector('.product-tile__price-discounted').textContent.trim()}` }]
+      const priceElement = game.querySelector('.product-tile__price-discounted')
+      const priceNow = priceElement ? `$${priceElement.textContent.trim()}` : ''
 
-      const discount = game.querySelector('.product-tile__discount') ? game.querySelector('.product-tile__discount').textContent : ''
-      const url = `https://www.gog.com${game.querySelector('a').href}`
+      const price = [{ now: priceNow }]
+
+      const discountElement = game.querySelector('.product-tile__discount')
+      const discount = discountElement ? discountElement.textContent : ''
+
+      const url = `${game.querySelector('a').href}`
 
       results.push({ name, imgUrl, price, discount, url })
     }
