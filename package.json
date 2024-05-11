@@ -17,6 +17,7 @@
     "extends": "standard"
   },
   "dependencies": {
-    "@playwright/test": "^1.43.1"
+    "@playwright/test": "^1.43.1",
+    "express": "^4.19.2"
   }
 }
